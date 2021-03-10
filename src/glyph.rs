@@ -97,9 +97,6 @@ impl _Glyph {
 
     // fn copy
 
-
-    // fn draw XXX Implement this in Python wrapper
-
     #[allow(non_snake_case)]
     fn drawPoints(&self, pen: PyObject) {
       if let Some(o) = &self.glyph.outline {
