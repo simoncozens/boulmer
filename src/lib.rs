@@ -12,8 +12,8 @@ mod glyph;
 
 #[pymodule]
 fn boulmer(_py: Python, m: &PyModule) -> PyResult<()> {
-    m.add_class::<font::Font>()?;
-    m.add_class::<glyph::Glyph>()?;
+    m.add_class::<font::_Font>()?;
+    m.add_class::<glyph::_Glyph>()?;
     m.add_class::<component::Component>()?;
     Ok(())
 }
