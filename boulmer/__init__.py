@@ -1,5 +1,6 @@
 from .boulmer import _Font
 from .boulmer import _Glyph
+from .boulmer import _Layer
 from fontTools.pens.pointPen import PointToSegmentPen
 
 
@@ -20,6 +21,27 @@ class Glyph:
         raise AttributeError(item)
 
 
+class LayerSet:
+    def __init__(self, font):
+        self.font = font
+
+    @property
+    def defaultLayer(self):
+        return self.font.get_default_layer()
+
+    def __len__(self):
+        return self.font.layer_count()
+
+    def __getitem__(self, layer):
+        return self.font.find_layer_by_name(layer)
+
+    def __contains__(self, layer):
+        try:
+            self.font.find_layer_by_name(layer)
+        except KeyError as e:
+            return False
+        return True
+
 class Font:
     def __init__(self, path):
         self.font = _Font.load(str(path))
@@ -34,3 +56,7 @@ class Font:
         if hasattr(self.font, item):
             return getattr(self.font, item)
         raise AttributeError(item)
+
+    @property
+    def layers(self):
+        return LayerSet(self)

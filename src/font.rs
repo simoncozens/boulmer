@@ -7,9 +7,10 @@ use pyo3::prelude::*;
 use pyo3::types::PyUnicode;
 
 use crate::glyph::_Glyph;
+use crate::layer::_Layer;
 
 use pyo3::PyResult;
-use pyo3::exceptions::PyValueError;
+use pyo3::exceptions::{PyValueError, PyKeyError};
 
 #[pyclass(subclass)]
 #[derive(Clone,Debug)]
@@ -93,6 +94,23 @@ impl _Font {
       	Some(lib) => lib.to_object(py),
       	None => PyDict::new(py).into()
       }
+		}
+
+		fn get_default_layer(&self) -> PyResult<_Layer> {
+      match self.font.get_default_layer() {
+      	Some(l) => Ok(l.clone().into()),
+      	None => Err(PyValueError::new_err("No default layer found"))
+      }
+		}
+
+		fn find_layer_by_name(&self, s: &str) -> PyResult<_Layer> {
+      match self.font.find_layer(|layer| layer.name == s) {
+      	Some(l) => Ok(l.clone().into()),
+      	None => Err(PyKeyError::new_err("Layer not found"))
+      }
+		}
+		fn layer_count(&self) -> usize {
+			self.font.layers.len()
 		}
 }
 

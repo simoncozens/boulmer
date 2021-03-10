@@ -1,4 +1,5 @@
 from boulmer import Font
+import boulmer
 from fontTools.pens.recordingPen import RecordingPen
 
 
@@ -6,6 +7,10 @@ def test_constructor_from_path(datadir):
     path = datadir / "UbuTestData.ufo"
     font = Font(path)
     assert len(font) == 2
+    assert len(font.layers) == 2
+    assert "public.background" in font.layers
+    assert "public.backgroundx" not in font.layers
+    assert isinstance(font.layers.defaultLayer,boulmer._Layer)
     assert len(font["a"]) == 2
 
 def test_draw(datadir):
