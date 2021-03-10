@@ -5,11 +5,11 @@ use pyo3::PyResult;
 
 #[pyclass(subclass)]
 #[derive(Clone,Debug)]
-pub struct Component {
+pub struct _Component {
     pub component: norad::Component,
 }
 
-impl From<norad::Component> for Component {
+impl From<norad::Component> for _Component {
     fn from(component: norad::Component) -> Self {
         Self{component}
     }

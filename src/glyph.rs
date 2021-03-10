@@ -1,3 +1,5 @@
+use crate::contour::_Contour;
+use crate::component::_Component;
 use pyo3::types::PyDict;
 // use crate::component::Component;
 use std::sync::Arc;
@@ -79,19 +81,19 @@ impl _Glyph {
     //   }
     // }
 
-    // fn components(&self) -> Vec<Component> {
-    //     match &self.glyph.outline {
-    //         Some(outline) => outline.components.iter().map(|c| Component::from(c)).collect(),
-    //         None => Vec::<Component>::new()
-    //     }
-    // }
+    fn components(&self) -> Vec<_Component> {
+        match &self.glyph.outline {
+            Some(outline) => outline.components.iter().map(|c| _Component::from(c.clone())).collect(),
+            None => Vec::<_Component>::new()
+        }
+    }
 
-    // fn contours(&self) -> Vec<Contour> {
-    //     match &self.glyph.outline {
-    //         Some(outline) => outline.contours.iter().map(|c| Contour::from(c)).collect(),
-    //         None => Vec::<Contour>::new()
-    //     }
-    // }
+    fn contours(&self) -> Vec<_Contour> {
+        match &self.glyph.outline {
+            Some(outline) => outline.contours.iter().map(|c| _Contour::from(c.clone())).collect(),
+            None => Vec::<_Contour>::new()
+        }
+    }
 
     // fn copy
 
