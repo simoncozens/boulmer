@@ -5,7 +5,8 @@ authors = ["Simon Cozens <simon@simon-cozens.org>"]
 edition = "2018"
 
 [dependencies]
-norad = "^0.3"
+rayon = "^1.3"
+norad = { version = "^0.3", features = ["rayon"] }
 plist = "^1.1"
 
 [lib]
