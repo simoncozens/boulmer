@@ -1,0 +1,21 @@
+[package]
+name = "boulmer"
+version = "0.1.0"
+authors = ["Simon Cozens <simon@simon-cozens.org>"]
+edition = "2018"
+
+[dependencies]
+norad = "^0.3"
+
+[lib]
+crate-type = ["cdylib"]
+
+[package.metadata.maturin]
+classifier = [
+  "Programming Language :: Rust",
+  "Multimedia :: Graphics :: Editors :: Vector-Based"
+]
+
+[dependencies.pyo3]
+version = "0.13.2"
+features = ["extension-module"]
