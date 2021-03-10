@@ -12,6 +12,7 @@ def test_constructor_from_path(datadir):
     assert "public.backgroundx" not in font.layers
     assert isinstance(font.layers.defaultLayer,boulmer._Layer)
     assert len(font["a"]) == 2
+    assert font["a"].bounds == (43,-11,448,533)
 
 def test_draw(datadir):
     path = datadir / "UbuTestData.ufo"
