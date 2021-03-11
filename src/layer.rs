@@ -1,11 +1,9 @@
-
 // use crate::component::Component;
 
 use crate::glyph::_Glyph;
-use std::sync::Arc;
-use pyo3::PyIterProtocol;
 use pyo3::prelude::*;
-
+use pyo3::PyIterProtocol;
+use std::sync::Arc;
 
 #[pyclass(unsendable)]
 struct GlyphIterator {
@@ -20,25 +18,23 @@ impl PyIterProtocol for GlyphIterator {
 
     fn __next__(mut slf: PyRefMut<Self>) -> Option<_Glyph> {
         match slf.inner.next() {
-        	Some(g) => Some(_Glyph{ glyph: g }),
-        	None => None
+            Some(g) => Some(_Glyph { glyph: g }),
+            None => None,
         }
     }
 }
 
-
 #[pyclass(subclass)]
-#[derive(Clone,Debug)]
+#[derive(Clone, Debug)]
 pub struct _Layer {
     pub layer: norad::Layer,
 }
 
 impl From<norad::Layer> for _Layer {
     fn from(layer: norad::Layer) -> Self {
-        Self{layer}
+        Self { layer }
     }
 }
-
 
 // #[pyproto]
 // impl PyIterProtocol for _Layer {

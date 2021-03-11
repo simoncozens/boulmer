@@ -1,7 +1,4 @@
-use pyo3::class::PySequenceProtocol;
 use pyo3::prelude::*;
-use pyo3::PyResult;
-
 
 trait ToString {
     fn to_string(&self) -> Option<String>;
@@ -18,40 +15,48 @@ impl ToString for norad::glyph::PointType {
     }
 }
 
-
 #[pyclass(subclass)]
-#[derive(Clone,Debug)]
+#[derive(Clone, Debug)]
 pub struct _ContourPoint {
     pub pt: norad::ContourPoint,
 }
 
 impl From<norad::ContourPoint> for _ContourPoint {
     fn from(pt: norad::ContourPoint) -> Self {
-        Self{pt}
+        Self { pt }
     }
-
 }
 
 #[pymethods]
 impl _ContourPoint {
-	#[getter]
-	fn x(&self) -> f32 { self.pt.x }
-	#[getter]
-	fn y(&self) -> f32 { self.pt.y }
-	#[getter]
-	fn smooth(&self) -> bool { self.pt.smooth }
+    #[getter]
+    fn x(&self) -> f32 {
+        self.pt.x
+    }
+    #[getter]
+    fn y(&self) -> f32 {
+        self.pt.y
+    }
+    #[getter]
+    fn smooth(&self) -> bool {
+        self.pt.smooth
+    }
 
-	#[getter]
-	fn name(&self) -> Option<String> { self.pt.name.clone() }
+    #[getter]
+    fn name(&self) -> Option<String> {
+        self.pt.name.clone()
+    }
 
-	#[allow(non_snake_case)]
-	#[getter]
-	fn segmentType(&self) -> Option<String> { self.pt.typ.to_string() }
-	#[getter]
-	fn identifier(&self) -> Option<String> {
-		match self.pt.identifier() {
-			Some(s) => Some(s.as_str().into()),
-			None => None
-		}
-	}
+    #[allow(non_snake_case)]
+    #[getter]
+    fn segmentType(&self) -> Option<String> {
+        self.pt.typ.to_string()
+    }
+    #[getter]
+    fn identifier(&self) -> Option<String> {
+        match self.pt.identifier() {
+            Some(s) => Some(s.as_str().into()),
+            None => None,
+        }
+    }
 }

@@ -1,22 +1,21 @@
-use crate::contour::_Contour;
 use crate::component::_Component;
+use crate::contour::_Contour;
 use pyo3::types::PyDict;
 // use crate::component::Component;
-use std::sync::Arc;
 use pyo3::class::PySequenceProtocol;
 use pyo3::prelude::*;
 use pyo3::PyResult;
-
+use std::sync::Arc;
 
 #[pyclass(subclass)]
-#[derive(Clone,Debug)]
+#[derive(Clone, Debug)]
 pub struct _Glyph {
     pub glyph: Arc<norad::Glyph>,
 }
 
 impl From<Arc<norad::Glyph>> for _Glyph {
     fn from(glyph: Arc<norad::Glyph>) -> Self {
-        Self{glyph}
+        Self { glyph }
     }
 }
 
@@ -42,12 +41,12 @@ impl _Glyph {
     //     Self {glyph: norad::Glyph::new() }
     // }
 
-//     fn __getitem__(&self, s: &str) -> Option<usize> {
-//     	match self.font.get_glyph(s) {
-// 				Some(glyph) => Some(1),
-//     		None => None
-//     	}
-//     }
+    //     fn __getitem__(&self, s: &str) -> Option<usize> {
+    //     	match self.font.get_glyph(s) {
+    // 				Some(glyph) => Some(1),
+    //     		None => None
+    //     	}
+    //     }
 
     // fn anchors
     // fn appendAnchor
@@ -83,15 +82,23 @@ impl _Glyph {
 
     fn components(&self) -> Vec<_Component> {
         match &self.glyph.outline {
-            Some(outline) => outline.components.iter().map(|c| _Component::from(c.clone())).collect(),
-            None => Vec::<_Component>::new()
+            Some(outline) => outline
+                .components
+                .iter()
+                .map(|c| _Component::from(c.clone()))
+                .collect(),
+            None => Vec::<_Component>::new(),
         }
     }
 
     fn contours(&self) -> Vec<_Contour> {
         match &self.glyph.outline {
-            Some(outline) => outline.contours.iter().map(|c| _Contour::from(c.clone())).collect(),
-            None => Vec::<_Contour>::new()
+            Some(outline) => outline
+                .contours
+                .iter()
+                .map(|c| _Contour::from(c.clone()))
+                .collect(),
+            None => Vec::<_Contour>::new(),
         }
     }
 
@@ -99,47 +106,56 @@ impl _Glyph {
 
     #[allow(non_snake_case)]
     fn drawPoints(&self, pen: PyObject) {
-      if let Some(o) = &self.glyph.outline {
-        let gil = Python::acquire_gil();
-        let py = gil.python();
+        if let Some(o) = &self.glyph.outline {
+            let gil = Python::acquire_gil();
+            let py = gil.python();
 
-        for c in &o.contours {
-            if let Err(e) = pen.call_method0(py, "beginPath") {
-                e.restore(py);
-                return
+            for c in &o.contours {
+                if let Err(e) = pen.call_method0(py, "beginPath") {
+                    e.restore(py);
+                    return;
+                }
+                for p in &c.points {
+                    let coord = (p.x, p.y).to_object(py);
+                    let d = PyDict::new(py);
+                    d.set_item("segmentType", p.typ.to_string()).unwrap();
+                    d.set_item("smooth", Some(p.smooth)).unwrap();
+                    d.set_item("name", p.name.as_ref()).unwrap();
+                    // d.set_item("identifier", p.identifier.as_ref()).unwrap();
+                    pen.call_method(py, "addPoint", (coord,), Some(d)).unwrap();
+                }
+                pen.call_method0(py, "endPath").unwrap();
             }
-            for p in &c.points {
-                let coord = (p.x, p.y).to_object(py);
-                let d = PyDict::new(py);
-                d.set_item("segmentType", p.typ.to_string()).unwrap();
-                d.set_item("smooth", Some(p.smooth)).unwrap();
-                d.set_item("name", p.name.as_ref()).unwrap();
-                // d.set_item("identifier", p.identifier.as_ref()).unwrap();
-                pen.call_method(py, "addPoint", (coord,), Some(d)).unwrap();
+            for c in &o.components {
+                let transform = (
+                    c.transform.x_scale,
+                    c.transform.xy_scale,
+                    c.transform.yx_scale,
+                    c.transform.y_scale,
+                    c.transform.x_offset,
+                    c.transform.y_offset,
+                );
+                pen.call_method1(
+                    py,
+                    "addComponent",
+                    (c.base.to_object(py), transform.to_object(py)),
+                )
+                .unwrap();
             }
-            pen.call_method0(py, "endPath").unwrap();
-
         }
-        for c in &o.components {
-            let transform = (c.transform.x_scale, c.transform.xy_scale, c.transform.yx_scale, c.transform.y_scale, c.transform.x_offset, c.transform.y_offset);
-            pen.call_method1(py, "addComponent", (c.base.to_object(py),transform.to_object(py))).unwrap();
-
-        }
-      }
     }
 
     fn width(&self) -> Option<f32> {
         self.glyph.advance_width()
     }
-
 }
 
 #[pyproto]
 impl PySequenceProtocol for _Glyph {
     fn __len__(&self) -> PyResult<usize> {
-      match &self.glyph.outline {
-        Some(outline) => Ok(outline.contours.len()),
-        None => Ok(0)
-      }
+        match &self.glyph.outline {
+            Some(outline) => Ok(outline.contours.len()),
+            None => Ok(0),
+        }
     }
 }
