@@ -14,6 +14,7 @@ mod info;
 fn boulmer(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<font::_Font>()?;
     m.add_class::<glyph::_Glyph>()?;
+    m.add_class::<layer::_GlyphIterator>()?;
     m.add_class::<layer::_Layer>()?;
     m.add_class::<contour::_Contour>()?;
     m.add_class::<contourpoint::_ContourPoint>()?;

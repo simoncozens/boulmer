@@ -1,10 +1,11 @@
 from .boulmer import _Font
 from .boulmer import _Glyph
 from .boulmer import _Layer
+from .boulmer import _GlyphIterator
 from fontTools.pens.pointPen import PointToSegmentPen
 from fontTools.pens.boundsPen import BoundsPen, ControlBoundsPen
 from typing import NamedTuple
-
+from fontTools.misc.arrayTools import unionRect
 
 class BoundingBox(NamedTuple):
     """Represents a bounding box as a tuple of (xMin, yMin, xMax, yMax)."""
@@ -14,6 +15,12 @@ class BoundingBox(NamedTuple):
     xMax: float
     yMax: float
 
+def unionBounds(bounds1, bounds2):
+    if bounds1 is None:
+        return bounds2
+    if bounds2 is None:
+        return bounds1
+    return BoundingBox(*unionRect(bounds1, bounds2))
 
 class Bounded:
     def getBounds(self, layer=None):
@@ -65,6 +72,53 @@ class Glyph(Proxy, Bounded):
     def __getitem__(self, i):
         return Contour(self._obj[i])
 
+class GlyphIterator(Proxy):
+    def __iter__(self):
+        return self._obj.__iter__()
+
+    def __next__(self):
+        return Glyph(next(self._obj))
+
+class Layer(Proxy):
+    def __contains__(self, glyph):
+        return glyph in self._obj
+
+    def __getitem__(self, i):
+        return Glyph(self._obj[i])
+
+    def __iter__(self):
+        return GlyphIterator(self._obj.__iter__())
+
+    @property
+    def bounds(self):
+        """Returns the (xMin, yMin, xMax, yMax) bounding box of the layer,
+        taking the actual contours into account.
+
+        |defcon_compat|
+        """
+        bounds = None
+        for glyph in self:
+            bounds = unionBounds(bounds, glyph.getBounds(self))
+        return bounds
+
+    @property
+    def controlPointBounds(self):
+        """Returns the (xMin, yMin, xMax, yMax) bounding box of the layer,
+        taking only the control points into account.
+
+        |defcon_compat|
+        """
+        bounds = None
+        for glyph in self:
+            bounds = unionBounds(bounds, glyph.getControlBounds(self))
+        return bounds
+
+    def test(self):
+        return True
+
+    @property
+    def test2(self):
+        return True
 
 class LayerSet:
     def __init__(self, font):
@@ -72,13 +126,13 @@ class LayerSet:
 
     @property
     def defaultLayer(self):
-        return self.font.get_default_layer()
+        return Layer(self.font.get_default_layer())
 
     def __len__(self):
         return self.font.layer_count()
 
     def __getitem__(self, layer):
-        return self.font.find_layer_by_name(layer)
+        return Layer(self.font.find_layer_by_name(layer))
 
     def __contains__(self, layer):
         try:
@@ -109,7 +163,7 @@ class Font(Proxy):
         return Glyph(self._obj[item])
 
     def __contains__(self, glyph):
-        return bool(self._obj.get(glyph, None))
+        return glyph in self._obj
 
     @classmethod
     def open(cls, filename):

@@ -239,7 +239,14 @@ impl PyMappingProtocol for _Font {
 
 #[pyproto]
 impl PySequenceProtocol for _Font {
-    fn __len__(&self) -> PyResult<usize> {
-        Ok(self.font.glyph_count())
+    fn __len__(&self) -> usize {
+        self.font.glyph_count()
+    }
+
+    fn __contains__(&self, glyphname: &str) -> bool {
+        match self.font.get_default_layer() {
+            Some(l) => l.contains_glyph(glyphname),
+            None => false,
+        }
     }
 }

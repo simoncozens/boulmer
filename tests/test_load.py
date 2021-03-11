@@ -11,8 +11,10 @@ def test_constructor_from_path(datadir):
     assert len(font.layers) == 2
     assert "public.background" in font.layers
     assert "public.backgroundx" not in font.layers
-    assert isinstance(font.layers.defaultLayer, boulmer._Layer)
+    assert isinstance(font.layers.defaultLayer, boulmer.Layer)
     assert len(font["a"]) == 2
+    assert "a" in font
+    assert "badger" not in font
     assert font["a"].bounds == (43, -11, 448, 533)
     assert font.get("Nonesuch", -123) == -123
 
@@ -120,3 +122,13 @@ def test_rename(datadir):
     assert font.keys() == ['badger', 'a']
     assert "badger" in font
     assert "A" not in font
+
+def test_layer(datadir):
+    path = datadir / "MutatorSansBoldCondensed.ufo"
+    font = Font(path)
+    l = font.layers.defaultLayer
+    assert len(l) == 48
+    assert "A" in l
+    assert l["A"]
+    assert l.bounds == (-10,-145,877,965)
+
