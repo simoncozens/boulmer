@@ -59,4 +59,6 @@ impl _ContourPoint {
             None => None,
         }
     }
+
+    // fn move(&self, x: f32, y:f32) { ... }
 }

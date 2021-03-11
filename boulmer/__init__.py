@@ -53,7 +53,9 @@ class Proxy(object):
         return len(self._obj)
 
 class Contour(Proxy, Bounded):
-        pass
+    def draw(self, pen):
+        pointPen = PointToSegmentPen(pen)
+        self.drawPoints(pointPen)
 
 class Glyph(Proxy, Bounded):
     def draw(self, pen):
