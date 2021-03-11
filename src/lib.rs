@@ -7,8 +7,8 @@ mod component;
 mod contour;
 mod contourpoint;
 mod glyph;
+mod info;
 // mod image;
-// mod outline;
 
 #[pymodule]
 fn boulmer(_py: Python, m: &PyModule) -> PyResult<()> {
@@ -18,5 +18,6 @@ fn boulmer(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<contour::_Contour>()?;
     m.add_class::<contourpoint::_ContourPoint>()?;
     m.add_class::<component::_Component>()?;
+    m.add_class::<info::_Info>()?;
     Ok(())
 }

@@ -87,6 +87,20 @@ class LayerSet:
             return False
         return True
 
+class Features:
+    def __init__(self, text, font):
+        self._text = text
+        self.font = font
+
+    @property
+    def text(self):
+        return self._text
+
+    @text.setter
+    def text(self, value):
+        self._text = value
+        self.font.set_features(value)
+
 class Font(Proxy):
     def __init__(self, path):
         object.__setattr__(self, "_obj", _Font.load(str(path)))
@@ -97,3 +111,20 @@ class Font(Proxy):
     @property
     def layers(self):
         return LayerSet(self)
+
+    @property
+    def features(self):
+        return Features(self._features(), self)
+
+    @property
+    def glyphOrder(self):
+        return self.lib.get("public.glyphOrder", [])
+
+    @property
+    def guidelines(self):
+        raise NotImplementedError("norad does not support font.guidelines")
+
+    @property
+    def images(self):
+        raise NotImplementedError("norad does not support font.images")
+

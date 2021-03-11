@@ -3,10 +3,12 @@ use pyo3::class::{PyMappingProtocol, PySequenceProtocol};
 use pyo3::prelude::*;
 use pyo3::types::PyUnicode;
 use pyo3::types::{PyDict, PyType};
+
 use std::path::Path;
 use std::sync::Arc;
 
 use crate::glyph::_Glyph;
+use crate::info::_Info;
 use crate::layer::_Layer;
 
 use pyo3::exceptions::{PyKeyError, PyValueError};
@@ -101,19 +103,63 @@ impl _Font {
 
     fn get_default_layer(&self) -> PyResult<_Layer> {
         match self.font.get_default_layer() {
-            Some(l) => Ok(l.clone().into()),
+            Some(l) => Ok(l.clone().into()), // Ideally not clone
             None => Err(PyValueError::new_err("No default layer found")),
         }
     }
 
     fn find_layer_by_name(&self, s: &str) -> PyResult<_Layer> {
         match self.font.find_layer(|layer| layer.name == s) {
-            Some(l) => Ok(l.clone().into()),
+            Some(l) => Ok(l.clone().into()), // Ideally not clone
             None => Err(PyKeyError::new_err("Layer not found")),
         }
     }
     fn layer_count(&self) -> usize {
         self.font.layers.len()
+    }
+
+    // addGlyph
+    // appendGuideline
+    // bounds / controlpointbounds in Python
+    // data?!
+    fn _features(&self) -> Option<&String> {
+        self.font.features.as_ref()
+    }
+
+    fn get(&self, s: &str, default: PyObject) -> PyObject {
+        let gil = Python::acquire_gil();
+        let py = gil.python();
+        match self.font.get_glyph(s) {
+            Some(glyph) => _Glyph {
+                glyph: Arc::clone(glyph),
+            }
+            .into_py(py),
+            None => default,
+        }
+    }
+
+    // glyphOrder in Python
+
+    #[getter]
+    fn groups(&self) -> pyo3::Py<pyo3::PyAny> {
+        let gil = Python::acquire_gil();
+        let py = gil.python();
+        let d = PyDict::new(py);
+        if let Some(groups) = &self.font.groups {
+            for (k, v) in groups.iter() {
+                let names: Vec<String> = v.iter().map(|n| n.clone().to_string()).collect();
+                d.set_item(k, names.to_object(py)).unwrap();
+            }
+        }
+        d.into()
+    }
+
+    #[getter]
+    fn info(&self) -> Option<_Info> {
+        match &self.font.font_info {
+            Some(s) => Some(s.clone().into()), // Ideally not clone
+            None => None,
+        }
     }
 }
 
@@ -122,7 +168,7 @@ impl PyMappingProtocol for _Font {
     fn __getitem__(&self, s: &str) -> Option<_Glyph> {
         match self.font.get_glyph(s) {
             Some(glyph) => Some(_Glyph {
-                glyph: Arc::clone(glyph),
+                glyph: Arc::clone(glyph), // Ideally not clone
             }),
             None => None,
         }
