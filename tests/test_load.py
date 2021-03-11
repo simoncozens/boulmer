@@ -1,6 +1,7 @@
 from boulmer import Font
 import boulmer
 from fontTools.pens.recordingPen import RecordingPen
+import pytest
 
 
 def test_constructor_from_path(datadir):
@@ -100,3 +101,22 @@ def test_info(datadir):
     assert font.info.versionMinor == 2
     assert font.info.xHeight == 500
     assert font.info.year == 2004
+
+def test_kerning(datadir):
+    path = datadir / "MutatorSansBoldCondensed.ufo"
+    font = Font(path)
+    assert font.kerning["A"] == {'J': -20.0, 'O': -30.0, 'T': -70.0, 'U': -30.0, 'V': -50.0}
+
+@pytest.mark.skip("Not currently working")
+def test_rename(datadir):
+    path = datadir / "UbuTestData.ufo"
+    font = Font(path)
+    assert "badger" not in font
+    assert "A" in font
+    assert font.keys() == ['A', 'a']
+    with pytest.raises(ValueError):
+        font.renameGlyph("A", "a")
+    font.renameGlyph("A", "badger")
+    assert font.keys() == ['badger', 'a']
+    assert "badger" in font
+    assert "A" not in font

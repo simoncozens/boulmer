@@ -67,6 +67,7 @@ impl MyToPyObject for plist::Dictionary {
     }
 }
 
+#[allow(non_snake_case)]
 #[pymethods]
 impl _Font {
     #[new]
@@ -161,6 +162,67 @@ impl _Font {
             None => None,
         }
     }
+
+    #[getter]
+    fn kerning(&self) -> pyo3::Py<pyo3::PyAny> {
+        /* sigh */
+        let gil = Python::acquire_gil();
+        let py = gil.python();
+        let d = PyDict::new(py);
+        if let Some(kerning) = &self.font.kerning {
+            for (k, v) in kerning.iter() {
+                let d2 = PyDict::new(py);
+                for (k2, v2) in v.iter() {
+                    d2.set_item(k2, v2.to_object(py)).unwrap();
+                }
+                d.set_item(k, d2).unwrap();
+            }
+        }
+        d.into()
+    }
+
+    fn keys(&self) -> Vec<String> {
+        self.font.iter_names().map(|n| n.to_string()).collect()
+    }
+
+    // layers in Python
+    // newGlyph
+    // newLayer
+    // objectLib ???!!
+    // open in Python
+
+    // fn _renameGlyph(&mut self, old: &str, new: &str, overwrite: bool) -> PyResult<()> {
+    //     println!("Before");
+    //     for n in self.font.iter_names() {
+    //         println!(". {:?}", n);
+    //     }
+    //     if self.font.get_glyph(new).is_some() && !overwrite {
+    //         return Err(PyValueError::new_err("New glyph already exists"));
+    //     }
+    //     if let Some(g) = self.font.get_glyph_mut(old) {
+    //         println!("Found a glyph");
+    //         g.name = new.into(); // REALLY?
+    //         println!("Its name is now {:?}", g.name)
+    //     }
+    //     println!("After");
+    //     for n in self.font.iter_names() {
+    //         println!(". {:?}", n);
+    //     }
+
+    //     Ok(())
+    // }
+    // fn _renameLayer(&mut self, old: String, new: String, overwrite: bool) -> PyResult<()> {
+    //     // Check if new layer exists
+    //     if self.font.find_layer(|layer| layer.name == new).is_some() && !overwrite {
+    //         return Err(PyValueError::new_err("New layer already exists"));
+    //     }
+    //     for l in self.font.layers.iter_mut() {
+    //         if l.name == old {
+    //             l.name = new.clone()
+    //         }
+    //     }
+    //     Ok(())
+    // }
 }
 
 #[pyproto]

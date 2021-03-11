@@ -108,6 +108,13 @@ class Font(Proxy):
     def __getitem__(self, item):
         return Glyph(self._obj[item])
 
+    def __contains__(self, glyph):
+        return bool(self._obj.get(glyph, None))
+
+    @classmethod
+    def open(cls, filename):
+        return Font(filename)
+
     @property
     def layers(self):
         return LayerSet(self)
@@ -128,3 +135,8 @@ class Font(Proxy):
     def images(self):
         raise NotImplementedError("norad does not support font.images")
 
+    def renameLayer(self, old, new, overwrite=False):
+        self._renameLayer(old, new, overwrite)
+
+    def renameGlyph(self, old, new, overwrite=False):
+        self._renameGlyph(old, new, overwrite)
